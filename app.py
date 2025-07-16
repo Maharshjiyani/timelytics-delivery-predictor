@@ -4,7 +4,9 @@ import pickle
 import numpy as np
 from PIL import Image
 import pandas as pd
-
+import gzip
+import os
+import urllib.request
 
 # Set the page configuration of the app
 st.set_page_config(
@@ -13,10 +15,8 @@ st.set_page_config(
     layout="wide",
 )
 
-
 # Display the title and captions for the app
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
-
 
 st.caption(
     "Timelytics is an ensemble model that utilizes three powerful machine learning algorithms - "
@@ -24,22 +24,25 @@ st.caption(
     "Delivery (OTD) times."
 )
 
-
 st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain "
     "and take proactive measures to address them, reducing lead times and improving delivery times."
 )
 
-
-# Load the trained ensemble model
+# Load the trained ensemble model (from compressed .pkl.gz file)
 @st.cache_resource
 def load_model():
-    with open("./voting_model.pkl", "rb") as file:
+    model_path = "voting_model.pkl.gz"
+    
+    # Optional: Download from external source if not included in repo
+    # url = "https://your-link-to-release-or-drive/voting_model.pkl.gz"
+    # if not os.path.exists(model_path):
+    #     urllib.request.urlretrieve(url, model_path)
+
+    with gzip.open(model_path, "rb") as file:
         return pickle.load(file)
 
-
 voting_model = load_model()
-
 
 # Prediction function
 def waitime_predictor(
@@ -70,13 +73,11 @@ def waitime_predictor(
     )
     return round(prediction[0])
 
-
 # Sidebar for input
 with st.sidebar:
     img = Image.open("./assets/supply_chain_optimisation.jpg")
     st.image(img)
     st.header("Input Parameters")
-
 
     purchase_dow = st.number_input("Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3)
     purchase_month = st.number_input("Purchased Month", min_value=1, max_value=12, step=1, value=1)
@@ -87,9 +88,7 @@ with st.sidebar:
     geolocation_state_seller = st.number_input("Geolocation State of the Seller", min_value=0, value=20)
     distance = st.number_input("Distance (in km)", min_value=0.0, value=475.35)
 
-
     submit = st.button("Predict OTD Time")
-
 
 # Output container
 with st.container():
@@ -108,7 +107,6 @@ with st.container():
             )
             st.success(f"📦 Estimated Delivery Time: **{prediction} days**")
 
-
     # Display sample dataset
     sample_data = {
         "Purchased Day of the Week": [0, 3, 1],
@@ -121,9 +119,7 @@ with st.container():
         "Distance (in km)": [247.94, 250.35, 4.915],
     }
 
-
     df = pd.DataFrame(sample_data)
-
 
     st.header("📊 Sample Dataset (For Reference)")
     st.write(df)
