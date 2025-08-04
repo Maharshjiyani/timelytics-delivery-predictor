@@ -121,5 +121,5 @@ with st.container():
 
     df = pd.DataFrame(sample_data)
 
-    st.header("📊 Sample Dataset (For Reference)")
+    st.header("📊 Sample Dataset")
     st.write(df)
